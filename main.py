@@ -101,9 +101,12 @@ if __name__ == '__main__':
     p1.place_ship(p1_carrier, ['D4', 'E4', 'F4', 'G4', 'H4'])
 
     p2_destroyer = Ship.destroyer()
+    p2_carrier = Ship.carrier()
 
     p2 = Player('Player Two')
     p2.place_ship(p2_destroyer, ['A1', 'A2'])
+    p2.place_ship(p2_carrier, ['C2', 'D2', 'E2', 'F2', 'G2'])
+
 
     game = Game(p1, p2)
 
@@ -121,7 +124,7 @@ if __name__ == '__main__':
             elif command == 'SHOW':
                 render_views(game)
             elif (not p1.valid_coord(command)):
-                print '\nPlease enter a valid co-ordinate (e.g. C7), "show" to view the board, or quit" to end game.'
+                print '\nPlease enter a valid co-ordinate (e.g. C7), "show" to view the board, or "quit" to end game.'
             else:
                 valid_coord = True
 
