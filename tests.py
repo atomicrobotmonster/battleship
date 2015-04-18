@@ -1,32 +1,34 @@
 #!/usr/bin/env python
 
-from engine import Game, Player, Ship, GridSpace, Outcome, AlreadyAttacked, AlreadyAssigned, InvalidCoord
-
 import unittest
+
+import engine
 
 
 class GameTest(unittest.TestCase):
 
     def setUp(self):
-        self.p1 = Player('Player One')
+        self.p1 = engine.Player('Player One')
 
-        self.p2_submarine = Ship.submarine()
-        self.p2_destroyer = Ship.destroyer()
+        self.p2_submarine = engine.Ship.submarine()
+        self.p2_destroyer = engine.Ship.destroyer()
 
-        self.p2 = Player('Player Two')
-        self.p2.place_ship(self.p2_submarine, ['A1', 'A2', 'A3'])
-        self.p2.place_ship(self.p2_destroyer, ['C7', 'D7'])
+        self.p2 = engine.Player('Player Two')
+        self.p2.place_ship(
+            self.p2_submarine, 'A1', engine.Orientation.landscape)
+        self.p2.place_ship(
+            self.p2_destroyer, 'C7', engine.Orientation.portrait)
 
-        self.game = Game(self.p1, self.p2)
+        self.game = engine.Game(self.p1, self.p2)
 
     def test_miss(self):
         self.assertEquals(
-            Outcome.miss(),
+            engine.Outcome.miss(),
             self.game.take_turn('B3'))
 
     def test_hit(self):
         self.assertEquals(
-            Outcome.hit(self.p2_submarine),
+            engine.Outcome.hit(self.p2_submarine),
             self.game.take_turn('A2'))
 
     def test_sunk(self):
@@ -34,7 +36,7 @@ class GameTest(unittest.TestCase):
         self.game.take_turn('A3')
 
         self.assertEquals(
-            Outcome.sunk(self.p2_submarine),
+            engine.Outcome.sunk(self.p2_submarine),
             self.game.take_turn('A2'))
 
     def test_game_over(self):
@@ -45,7 +47,7 @@ class GameTest(unittest.TestCase):
         actual = self.game.take_turn('C7')
 
         self.assertEquals(
-            Outcome.win(self.p2_destroyer),
+            engine.Outcome.win(self.p2_destroyer),
             actual)
 
         self.assertTrue(actual.is_game_over())
@@ -53,7 +55,7 @@ class GameTest(unittest.TestCase):
     def test_already_attacked_raises_exception(self):
         targetCoord = 'A1'
 
-        with self.assertRaises(AlreadyAttacked) as cm:
+        with self.assertRaises(engine.AlreadyAttacked) as cm:
             self.game.take_turn(targetCoord)
             self.game.take_turn(targetCoord)
 
@@ -72,8 +74,8 @@ class GameTest(unittest.TestCase):
 class PlayerTest(unittest.TestCase):
 
     def setUp(self):
-        self.player = Player('Testy')
-        self.carrier = Ship.carrier()
+        self.player = engine.Player('Testy')
+        self.carrier = engine.Ship.carrier()
 
     def test_set_grid_space(self):
         coord = 'A1'
@@ -81,14 +83,14 @@ class PlayerTest(unittest.TestCase):
         self.player._set_grid_space(coord, self.carrier)
 
         self.assertEquals(
-            self.player.grid[coord], GridSpace(self.player, coord, self.carrier))
+            self.player.grid[coord], engine.GridSpace(self.player, coord, self.carrier))
 
     def test_alread_assigned_raises_exception(self):
         duplicateCoord = 'C1'
 
         self.player._set_grid_space(duplicateCoord, self.carrier)
 
-        with self.assertRaises(AlreadyAssigned) as cm:
+        with self.assertRaises(engine.AlreadyAssigned) as cm:
             self.player._set_grid_space(duplicateCoord, self.carrier)
 
         self.assertEquals(cm.exception.coord, duplicateCoord)
@@ -117,7 +119,7 @@ class PlayerTest(unittest.TestCase):
     def test_split_coord_on_blank_raises_exception(self):
         invalidCoord = ''
 
-        with self.assertRaises(InvalidCoord) as cm:
+        with self.assertRaises(engine.InvalidCoord) as cm:
             self.player.split_coord(invalidCoord)
 
         self.assertEquals(cm.exception.coord, invalidCoord)
@@ -135,13 +137,25 @@ class PlayerTest(unittest.TestCase):
         self.assertEquals(
             self.player.coord_tuple_to_index_tuple(('C', '7')), (2, 6))
 
-    def test_coord_tuple_to_index_tuple_on_AA7(self):
+    def test_coord_tuple_to_index_tuple_on_CA7(self):
         self.assertEquals(
             self.player.coord_tuple_to_index_tuple(('CA', '7')), (9, 6))
 
-    def test_coord_tuple_to_index_tuple_on_AA7(self):
+    def test_coord_tuple_to_index_tuple_on_ABC7(self):
         self.assertEquals(
             self.player.coord_tuple_to_index_tuple(('ABC', '7')), (17, 6))
+
+    def test_calculate_coords_landscape(self):
+        origin_coord = 'A4'
+        coords = self.player._calculate_coords(
+            origin_coord, engine.Orientation.landscape, 3)
+        self.assertEquals(coords, ['A4', 'A5', 'A6'])
+
+    def test_calculate_coords_portrait(self):
+        origin_coord = 'A4'
+        coords = self.player._calculate_coords(
+            origin_coord, engine.Orientation.portrait, 3)
+        self.assertEquals(coords, ['A4', 'B4', 'C4'])
 
 
 if __name__ == '__main__':

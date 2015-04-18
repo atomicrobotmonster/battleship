@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from engine import Player, Game, GridSpace, Ship, AlreadyAttacked
+from engine import Player, Game, Ship, AlreadyAttacked, Orientation
 
 
 def create_fleet_view(player):
@@ -53,15 +53,17 @@ def print_view(view, grid_dimension):
 
     lines = []
 
-    column_headers = ['{0}'.format(i + 1) for i in range(y)]
+    column_headers = '  '.join(['{0}'.format(i + 1) for i in range(y)])
 
     column_header_left_padding = ' ' * 5
     column_header_right_padding = ' ' * 3
 
     lines.append(column_header_left_padding +
-                 '  '.join(column_headers) + column_header_right_padding)
+                 column_headers + column_header_right_padding)
 
-    lines.append('  +--------------------------+')
+    grid_horizontal_edge = '  +--------------------------+'
+
+    lines.append(grid_horizontal_edge)
 
     row_number = 0
     for row in view:
@@ -72,7 +74,7 @@ def print_view(view, grid_dimension):
         lines.append(row_text)
         row_number += 1
 
-    lines.append('  +--------------------------+')
+    lines.append(grid_horizontal_edge)
 
     return lines
 
@@ -98,15 +100,14 @@ def render_views(game):
 if __name__ == '__main__':
     p1_carrier = Ship.carrier()
     p1 = Player('Player One')
-    p1.place_ship(p1_carrier, ['D4', 'E4', 'F4', 'G4', 'H4'])
+    p1.place_ship(p1_carrier, 'D4', Orientation.landscape)
 
     p2_destroyer = Ship.destroyer()
     p2_carrier = Ship.carrier()
 
     p2 = Player('Player Two')
-    p2.place_ship(p2_destroyer, ['A1', 'A2'])
-    p2.place_ship(p2_carrier, ['C2', 'D2', 'E2', 'F2', 'G2'])
-
+    p2.place_ship(p2_destroyer, 'A1', Orientation.landscape)
+    p2.place_ship(p2_carrier, 'C2', Orientation.portrait)
 
     game = Game(p1, p2)
 
