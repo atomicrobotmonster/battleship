@@ -101,17 +101,11 @@ class PlayerTest(unittest.TestCase):
     def test_split_coord_A7(self):
         self.assertEquals(('A', '7'), self.player.split_coord('A7'))
 
-    def test_AA7_is_valid_coord(self):
-        self.assertTrue(self.player.valid_coord('AA7'))
+    def test_AA7_is_not_valid_coord(self):
+        self.assertFalse(self.player.valid_coord('AA7'))
 
-    def test_split_coord_AA7(self):
-        self.assertEquals(('AA', '7'), self.player.split_coord('AA7'))
-
-    def test_AA07_is_valid_coord(self):
-        self.assertTrue(self.player.valid_coord('AA07'))
-
-    def test_split_coord_AA07(self):
-        self.assertEquals(('AA', '07'), self.player.split_coord('AA07'))
+    def test_AA07_is_not_valid_coord(self):
+        self.assertFalse(self.player.valid_coord('AA07'))
 
     def test_blank_is_not_valid_coord(self):
         self.assertFalse(self.player.valid_coord(''))
@@ -157,6 +151,22 @@ class PlayerTest(unittest.TestCase):
             origin_coord, engine.Orientation.PORTRAIT, 3)
         self.assertEquals(coords, ['A4', 'B4', 'C4'])
 
+    def test_place_landscape_ship_off_board(self):
+        player = engine.Player('Player One')
+
+        with self.assertRaises(engine.InvalidCoord) as cm:
+            player.place_ship(engine.Ship.carrier(), 'A8', engine.Orientation.LANDSCAPE)
+
+    def test_place_portrait_ship_off_board(self):
+        player = engine.Player('Player One')
+
+        with self.assertRaises(engine.InvalidCoord) as cm:
+            player.place_ship(engine.Ship.carrier(), 'E1', engine.Orientation.PORTRAIT)
+
+    def test_place_portrait_ship_on_board(self):
+        player = engine.Player('Player One')
+
+        player.place_ship(engine.Ship.carrier(), 'C5', engine.Orientation.PORTRAIT)
 
 if __name__ == '__main__':
     unittest.main()

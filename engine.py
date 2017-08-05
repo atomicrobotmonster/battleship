@@ -4,20 +4,24 @@ import re
 
 from enum import Enum, auto
 
+
 class OutcomeState(Enum):
     MISS = auto()
     HIT = auto()
     SUNK = auto()
     WIN = auto()
 
+
 class Orientation(Enum):
     PORTRAIT = auto()
     LANDSCAPE = auto()
 
-class Outcome(object):
+
+class Outcome:
     """Outcome of a player turn.
 
-    Clients should use static factory methods miss(), hit(ship), sunk(ship) and win(ship).
+    Clients should use static factory methods miss(),
+    hit(ship), sunk(ship) and win(ship).
     """
 
     def __init__(self, outcome_state, ship_name=None):
@@ -293,11 +297,11 @@ class Ship:
         return Ship('Destroyer', 2)
 
 
-class Player(object):
+class Player:
 
     """Player of the game, including their battle grid."""
 
-    coord_regex = r'^([A-H]+)([0-9]+)$'
+    coord_regex = r'^([A-H])([0-8])$'
 
     def __init__(self, name):
         """Allocates a new instance of a named player.
@@ -368,6 +372,8 @@ class Player(object):
         :param coord: player co-ordinate string
         :param ship: ship at the grid space identified by coord
         """
+        if not self.valid_coord(coord):
+            raise InvalidCoord(coord)
 
         if (coord not in self.grid):
             self.grid[coord] = GridSpace(self, coord, ship)
@@ -429,7 +435,7 @@ class Player(object):
         return self.name == other.name
 
 
-class Game(object):
+class Game:
 
     """A playable game of Battleship.
 
