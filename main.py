@@ -1,11 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from engine import Player, Game, Ship, AlreadyAttacked, Orientation
 
 
 def create_fleet_view(player):
     view = [['_'] * player.grid_dimension[0]
-            for _ in xrange(player.grid_dimension[1])]
+            for _ in range(player.grid_dimension[1])]
 
     for coord in player.grid.keys():
         grid_space = player.grid[coord]
@@ -26,7 +26,7 @@ def create_fleet_view(player):
 
 def create_target_view(player):
     view = [['_'] * player.grid_dimension[0]
-            for _ in xrange(player.grid_dimension[1])]
+            for _ in range(player.grid_dimension[1])]
 
     for coord in player.grid.keys():
         grid_space = player.grid[coord]
@@ -91,23 +91,23 @@ def render_views(game):
     fleet_view = render_fleet_view(game.current_player)
     target_view = render_target_view(game.current_opponent)
 
-    print '\n'
+    print('\n')
 
     for view_tuple in zip(fleet_view, target_view):
-        print '          '.join(view_tuple)
+        print('          '.join(view_tuple))
 
 
 if __name__ == '__main__':
     p1_carrier = Ship.carrier()
     p1 = Player('Player One')
-    p1.place_ship(p1_carrier, 'D4', Orientation.landscape)
+    p1.place_ship(p1_carrier, 'D4', Orientation.LANDSCAPE)
 
     p2_destroyer = Ship.destroyer()
     p2_carrier = Ship.carrier()
 
     p2 = Player('Player Two')
-    p2.place_ship(p2_destroyer, 'A1', Orientation.landscape)
-    p2.place_ship(p2_carrier, 'C2', Orientation.portrait)
+    p2.place_ship(p2_destroyer, 'A1', Orientation.LANDSCAPE)
+    p2.place_ship(p2_carrier, 'C2', Orientation.PORTRAIT)
 
     game = Game(p1, p2)
 
@@ -117,7 +117,7 @@ if __name__ == '__main__':
 
         valid_coord = False
         while playing and not valid_coord:
-            command = raw_input(
+            command = input(
                 '\nYour turn, ' + game.current_player.name + ': ').strip().upper()
 
             if command == 'QUIT':
@@ -125,7 +125,7 @@ if __name__ == '__main__':
             elif command == 'SHOW':
                 render_views(game)
             elif (not p1.valid_coord(command)):
-                print '\nPlease enter a valid co-ordinate (e.g. C7), "show" to view the board, or "quit" to end game.'
+                print('\nPlease enter a valid co-ordinate (e.g. C7), "show" to view the board, or "quit" to end game.')
             else:
                 valid_coord = True
 
@@ -133,9 +133,9 @@ if __name__ == '__main__':
             try:
                 outcome = game.take_turn(command)
             except AlreadyAttacked:
-                print ('\n{0} has already been attacked.'.format(command))
+                print('\n{0} has already been attacked.'.format(command))
             else:
-                print '\n{0}: {1}'.format(command, outcome)
+                print('\n{0}: {1}'.format(command, outcome))
                 playing = not outcome.is_game_over()
                 render_views(game)
 

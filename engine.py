@@ -2,16 +2,19 @@
 
 import re
 
-from enum import Enum
+from enum import Enum, auto
 
+class OutcomeState(Enum):
+    MISS = auto()
+    HIT = auto()
+    SUNK = auto()
+    WIN = auto()
 
-OutcomeState = Enum('OutcomeState', 'miss hit sunk win')
-
-Orientation = Enum('Orientation', 'portrait landscape')
-
+class Orientation(Enum):
+    PORTRAIT = auto()
+    LANDSCAPE = auto()
 
 class Outcome(object):
-
     """Outcome of a player turn.
 
     Clients should use static factory methods miss(), hit(ship), sunk(ship) and win(ship).
@@ -31,13 +34,13 @@ class Outcome(object):
         return self.outcome_state == other.outcome_state and self.ship_name == other.ship_name
 
     def __str__(self):
-        if self.outcome_state == OutcomeState.miss:
+        if self.outcome_state == OutcomeState.MISS:
             mesg = 'Miss'
-        elif self.outcome_state == OutcomeState.hit:
+        elif self.outcome_state == OutcomeState.HIT:
             mesg = 'Hit {0}'.format(self.ship_name)
-        elif self.outcome_state == OutcomeState.sunk:
+        elif self.outcome_state == OutcomeState.SUNK:
             mesg = 'Sunk {0}'.format(self.ship_name)
-        elif self.outcome_state == OutcomeState.win:
+        elif self.outcome_state == OutcomeState.WIN:
             mesg = 'Game over - last ship sunk was {0}'.format(self.ship_name)
         else:
             mesg = 'Invalid game outcome'
@@ -49,7 +52,7 @@ class Outcome(object):
 
         :return: True when the game is over; False otherwise
         """
-        return self.outcome_state == OutcomeState.win
+        return self.outcome_state == OutcomeState.WIN
 
     @staticmethod
     def miss():
@@ -57,7 +60,7 @@ class Outcome(object):
 
         :return: new instance of miss Outcome.
         """
-        return Outcome(OutcomeState.miss)
+        return Outcome(OutcomeState.MISS)
 
     @staticmethod
     def hit(ship):
@@ -66,7 +69,7 @@ class Outcome(object):
         :param ship: the sunk ship
         :return: new instance of ship hit Outcome.
         """
-        return Outcome(OutcomeState.hit, ship.name)
+        return Outcome(OutcomeState.HIT, ship.name)
 
     @staticmethod
     def sunk(ship):
@@ -75,7 +78,7 @@ class Outcome(object):
         :param ship: the sunk ship
         :return: new ship sunk Outcome
         """
-        return Outcome(OutcomeState.sunk, ship.name)
+        return Outcome(OutcomeState.SUNK, ship.name)
 
     @staticmethod
     def win(ship):
@@ -84,11 +87,10 @@ class Outcome(object):
         :param ship: the last ship sunk that caused the game to be won
         :return: new game over Outcome
         """
-        return Outcome(OutcomeState.win, ship.name)
+        return Outcome(OutcomeState.WIN, ship.name)
 
 
 class AlreadyAttacked(Exception):
-
     """Raised when a grid space has already been attacked."""
 
     def __init__(self, coord):
@@ -137,7 +139,7 @@ class InvalidCoord(Exception):
         return "Coordinate {0} is invalid.".format(self.coord)
 
 
-class GridSpace(object):
+class GridSpace:
 
     """Represents a non-empty space in the player game grid."""
 
@@ -214,7 +216,7 @@ class GridSpace(object):
             self.coord, self.state, self.ship.name if self.ship else '')
 
 
-class Ship(object):
+class Ship:
 
     """Ship used in the game.
 
@@ -340,15 +342,10 @@ class Player(object):
         """
         digit_domain = 3
 
-        ord_minus_one = lambda c: ord(c) - 64
-
-        x_ords = list(
-            reversed(
-                map(ord_minus_one, list(coord_tuple[0]))
-            ))
+        x_ords = list(reversed([ord(c) - 64 for c in list(coord_tuple[0])]))
 
         x_raised = [(x_ords[i] * (digit_domain ** i))
-                    for i in xrange(len(x_ords))]
+                    for i in range(len(x_ords))]
 
         x = sum(x_raised) - 1
         y = int(coord_tuple[1]) - 1
@@ -400,10 +397,10 @@ class Player(object):
         (origin_row, origin_column) = self.coord_tuple_to_index_tuple(
             origin_coord)
 
-        if Orientation.landscape == orientation:
-            return [self._tuple_to_coord(self.index_tuple_to_coord_tuple((origin_row, column))) for column in xrange(origin_column, origin_column + size)]
-        elif Orientation.portrait == orientation:
-            return [self._tuple_to_coord(self.index_tuple_to_coord_tuple((row, origin_column))) for row in xrange(origin_row, origin_row + size)]
+        if Orientation.LANDSCAPE == orientation:
+            return [self._tuple_to_coord(self.index_tuple_to_coord_tuple((origin_row, column))) for column in range(origin_column, origin_column + size)]
+        elif Orientation.PORTRAIT == orientation:
+            return [self._tuple_to_coord(self.index_tuple_to_coord_tuple((row, origin_column))) for row in range(origin_row, origin_row + size)]
         else:
             return []
 

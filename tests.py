@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import unittest
 
@@ -15,9 +15,9 @@ class GameTest(unittest.TestCase):
 
         self.p2 = engine.Player('Player Two')
         self.p2.place_ship(
-            self.p2_submarine, 'A1', engine.Orientation.landscape)
+            self.p2_submarine, 'A1', engine.Orientation.LANDSCAPE)
         self.p2.place_ship(
-            self.p2_destroyer, 'C7', engine.Orientation.portrait)
+            self.p2_destroyer, 'C7', engine.Orientation.PORTRAIT)
 
         self.game = engine.Game(self.p1, self.p2)
 
