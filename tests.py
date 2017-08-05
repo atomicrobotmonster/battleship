@@ -148,13 +148,13 @@ class PlayerTest(unittest.TestCase):
     def test_calculate_coords_landscape(self):
         origin_coord = 'A4'
         coords = self.player._calculate_coords(
-            origin_coord, engine.Orientation.landscape, 3)
+            origin_coord, engine.Orientation.LANDSCAPE, 3)
         self.assertEquals(coords, ['A4', 'A5', 'A6'])
 
     def test_calculate_coords_portrait(self):
         origin_coord = 'A4'
         coords = self.player._calculate_coords(
-            origin_coord, engine.Orientation.portrait, 3)
+            origin_coord, engine.Orientation.PORTRAIT, 3)
         self.assertEquals(coords, ['A4', 'B4', 'C4'])
 
 
