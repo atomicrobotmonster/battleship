@@ -4,13 +4,13 @@ from engine import Player, Game, Ship, AlreadyAttacked, Orientation, fleet
 
 
 def create_fleet_view(player):
-    view = [['_'] * player.grid_dimension[0]
-            for _ in range(player.grid_dimension[1])]
+    view = [['_'] * player.battle_grid.grid_dimension[0]
+            for _ in range(player.battle_grid.grid_dimension[1])]
 
-    for coord in player.grid.keys():
-        grid_space = player.grid[coord]
-        coord_tuple = player.split_coord(coord)
-        index_tuple = player.coord_tuple_to_index_tuple(coord_tuple)
+    for coord in player.battle_grid.grid.keys():
+        grid_space = player.battle_grid.grid[coord]
+        coord_tuple = player.battle_grid.split_coord(coord)
+        index_tuple = player.battle_grid.coord_tuple_to_index_tuple(coord_tuple)
 
         (x, y) = index_tuple
 
@@ -25,13 +25,13 @@ def create_fleet_view(player):
 
 
 def create_target_view(player):
-    view = [['_'] * player.grid_dimension[0]
-            for _ in range(player.grid_dimension[1])]
+    view = [['_'] * player.battle_grid.grid_dimension[0]
+            for _ in range(player.battle_grid.grid_dimension[1])]
 
-    for coord in player.grid.keys():
-        grid_space = player.grid[coord]
-        coord_tuple = player.split_coord(coord)
-        index_tuple = player.coord_tuple_to_index_tuple(coord_tuple)
+    for coord in player.battle_grid.grid.keys():
+        grid_space = player.battle_grid.grid[coord]
+        coord_tuple = player.battle_grid.split_coord(coord)
+        index_tuple = player.battle_grid.coord_tuple_to_index_tuple(coord_tuple)
 
         (x, y) = index_tuple
 
@@ -80,11 +80,11 @@ def print_view(view, grid_dimension):
 
 
 def render_fleet_view(player):
-    return print_view(create_fleet_view(player), player.grid_dimension)
+    return print_view(create_fleet_view(player), player.battle_grid.grid_dimension)
 
 
 def render_target_view(player):
-    return print_view(create_target_view(player), player.grid_dimension)
+    return print_view(create_target_view(player), player.battle_grid.grid_dimension)
 
 
 def render_views(game):
@@ -98,10 +98,9 @@ def render_views(game):
 
 
 if __name__ == '__main__':
-    p1_carrier = Ship.carrier()
+
     p1 = Player('Player One')
     p1.random_layout(fleet)
-
     p2 = Player('Player Two')
     p2.random_layout(fleet)
 
@@ -120,7 +119,7 @@ if __name__ == '__main__':
                 playing = False
             elif command == 'SHOW':
                 render_views(game)
-            elif (not p1.valid_coord(command)):
+            elif not p1.battle_grid.valid_coord(command):
                 print('\nPlease enter a valid co-ordinate (e.g. C7), "show" to view the board, or "quit" to end game.')
             else:
                 valid_coord = True

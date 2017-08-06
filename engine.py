@@ -149,7 +149,7 @@ class GridSpace:
 
     """Represents a non-empty space in the player game grid."""
 
-    def __init__(self, owning_player, coord, ship=None, state=''):
+    def __init__(self, grid, coord, ship=None, state=''):
         """Allocates a new instance.
 
         :param owning_player: player to which this grid space belongs to
@@ -159,7 +159,7 @@ class GridSpace:
         :return: new instance
         """
 
-        self.owning_player = owning_player
+        self.grid = grid
         self.coord = coord
         self.ship = ship
         self.state = state
@@ -174,9 +174,9 @@ class GridSpace:
             self._hit()
 
             if self.ship.is_sunk():
-                self.owning_player.active_ship_count -= 1
+                self.grid.active_ship_count -= 1
 
-                if (self.owning_player.active_ship_count == 0):
+                if (self.grid.active_ship_count == 0):
                     return Outcome.win(self.ship)
                 else:
                     return Outcome.sunk(self.ship)
@@ -215,7 +215,7 @@ class GridSpace:
         return self.state == 'miss'
 
     def __eq__(self, other):
-        return self.owning_player == other.owning_player and self.coord == other.coord and self.ship == other.ship and self.state == other.state
+        return self.grid == other.grid and self.coord == other.coord and self.ship == other.ship and self.state == other.state
 
     def __str__(self):
         return '{0}: {1} {2}'.format(
@@ -301,19 +301,14 @@ class Ship:
 
 fleet = [Ship.carrier(), Ship.battleship(), Ship.cruiser(), Ship.submarine(), Ship.destroyer()]
 
-class Player:
-
-    """Player of the game, including their battle grid."""
-
+class BattleGrid:
     coord_regex = r'^([A-H])([0-8])$'
 
-    def __init__(self, name):
-        """Allocates a new instance of a named player.
+    def __init__(self):
+        """Allocates a new instance.
 
-        :param name: name of player
         :return: new instance
         """
-        self.name = name
         self.grid = {}
         self.active_ship_count = 0
         self.grid_dimension = (8, 8)
@@ -325,7 +320,7 @@ class Player:
         :return: True when valid, False otherwise
         """
 
-        match = re.search(Player.coord_regex, coord)
+        match = re.search(BattleGrid.coord_regex, coord)
 
         return match is not None
 
@@ -335,7 +330,7 @@ class Player:
         :param coord: player co-ordinate string, e.g. 'A7'
         :return: tuple of row and column, e.g. ('A',7)
         """
-        match = re.search(Player.coord_regex, coord)
+        match = re.search(BattleGrid.coord_regex, coord)
 
         if (match is not None):
             return (match.group(1), match.group(2))
@@ -472,8 +467,43 @@ class Player:
             if len(ships_remaining) > 0:
                 # we failed to place all the ships so try again
                 ships_remaining = ships[:]
-                self.grid = {}
-                self.active_ship_count = 0
+                self.reset()
+
+    def reset(self):
+        self.grid = {}
+        self.active_ship_count = 0
+
+
+class Player:
+
+    """Player of the game, including their battle grid."""
+
+    def __init__(self, name):
+        """Allocates a new instance of a named player.
+
+        :param name: name of player
+
+        :return: new instance
+        """
+        self.name = name
+        self.battle_grid = BattleGrid()
+
+
+    def random_layout(self, fleet):
+        """Randomly layout fleet on player's battle grid.
+
+        :param fleet: ships to place on battle grid
+        """
+        self.battle_grid.random_layout(fleet)
+
+    def receive_attack(self, coord):
+        if (coord in self.battle_grid.grid.keys()):
+            targeted = self.battle_grid.grid[coord]
+            return targeted.attack()
+        else:
+            self.battle_grid.grid[coord] = GridSpace(
+                self, coord, state='miss')
+            return Outcome.miss()
 
 
     def __eq__(self, other):
@@ -516,10 +546,4 @@ class Game:
                  or the game being won (including which ship was sunk to trigger the win)
         """
 
-        if (coord in self.current_opponent.grid.keys()):
-            targeted = self.current_opponent.grid[coord]
-            return targeted.attack()
-        else:
-            self.current_opponent.grid[coord] = GridSpace(
-                self.current_opponent, coord, state='miss')
-            return Outcome.miss()
+        return self.current_opponent.receive_attack(coord)
