@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import re
+import random
+import traceback
 
 from enum import Enum, auto
 
@@ -219,7 +221,6 @@ class GridSpace:
         return '{0}: {1} {2}'.format(
             self.coord, self.state, self.ship.name if self.ship else '')
 
-
 class Ship:
 
     """Ship used in the game.
@@ -227,16 +228,18 @@ class Ship:
     Prefer use of static factory methods to create specific ship types.
     """
 
-    def __init__(self, name, size):
+    def __init__(self, name, size, code):
         """Allocates a new instance.
 
         :param name: the human readable name of the ship
         :param size: the number of contiguous grid spaces the ship occupies
+        :param code: a single character code to display on battle grid
         :return: new instance
         """
         self.name = name
         self.size = size
         self.hits = 0
+        self.code = code
 
     def hit(self):
         """Track a hit on this ship."""
@@ -260,7 +263,7 @@ class Ship:
         :return: new Carrier instance
         """
 
-        return Ship('Carrier', 5)
+        return Ship('Carrier', 5, 'C')
 
     @staticmethod
     def battleship():
@@ -268,7 +271,7 @@ class Ship:
 
         :return: new Battleship instance
         """
-        return Ship('Battleship', 4)
+        return Ship('Battleship', 4, 'B')
 
     @staticmethod
     def cruiser():
@@ -277,7 +280,7 @@ class Ship:
         :return: new Cruiser instance
         """
 
-        return Ship('Cruiser', 3)
+        return Ship('Cruiser', 3, 'R')
 
     @staticmethod
     def submarine():
@@ -285,7 +288,7 @@ class Ship:
 
         :return: new Submarine instance
         """
-        return Ship('Submarine', 3)
+        return Ship('Submarine', 3, 'S')
 
     @staticmethod
     def destroyer():
@@ -294,8 +297,9 @@ class Ship:
         :return: new Destroyer instance
         """
 
-        return Ship('Destroyer', 2)
+        return Ship('Destroyer', 2, 'D')
 
+fleet = [Ship.carrier(), Ship.battleship(), Ship.cruiser(), Ship.submarine(), Ship.destroyer()]
 
 class Player:
 
@@ -421,18 +425,60 @@ class Player:
         :param origin_coord: origin of the topmost or leftmost point
         :param orientation: orientation of the ship, either portrait or landscape
         """
-
-        self.active_ship_count += 1
+        if not self.valid_coord(origin_coord):
+            raise InvalidCoord(origin_coord)
 
         coord_tuple = self.split_coord(origin_coord)
 
         coords = self._calculate_coords(coord_tuple, orientation, ship.size)
 
+        # validate all coords within grid and unoccupied
+        for coord in coords:
+            if not self.valid_coord(coord):
+                raise InvalidCoord(coord)
+            if coord in self.grid:
+                raise AlreadyAssigned(coord)
+
         for coord in coords:
             self._set_grid_space(coord, ship)
 
+        self.active_ship_count += 1
+
+
+    def random_layout(self, ships):
+        attempted = set()
+        max_attempts = 8 * 8 * 2
+
+        ships_remaining = ships[:]
+        while len(ships_remaining) > 0:
+            while len(attempted) < max_attempts and len(ships_remaining) > 0:
+                #generate random coord and orientation
+                coord = random.choice('ABCDEFGH') + random.choice('12345678')
+                orientation = random.choice(list(Orientation))
+                coord_and_orientation = (coord, orientation)
+                ship = ships_remaining[0]
+
+                if coord_and_orientation not in attempted:
+                    attempted.add(coord_and_orientation)
+                    try:
+                        self.place_ship(ship, coord, orientation)
+                    except (AlreadyAssigned, InvalidCoord) as e:
+                        pass
+                    except Exception as e:
+                        traceback.print_exc(e)
+                    else:
+                        ships_remaining.pop(0)
+
+            if len(ships_remaining) > 0:
+                # we failed to place all the ships so try again
+                ships_remaining = ships[:]
+                self.grid = {}
+                self.active_ship_count = 0
+
+
     def __eq__(self, other):
         return self.name == other.name
+
 
 
 class Game:

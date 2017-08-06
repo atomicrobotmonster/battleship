@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from engine import Player, Game, Ship, AlreadyAttacked, Orientation
+from engine import Player, Game, Ship, AlreadyAttacked, Orientation, fleet
 
 
 def create_fleet_view(player):
@@ -19,7 +19,7 @@ def create_fleet_view(player):
         elif grid_space.is_hit():
             view[x][y] = 'X'
         elif grid_space.ship:
-            view[x][y] = 'S'
+            view[x][y] = grid_space.ship.code
 
     return view
 
@@ -100,14 +100,10 @@ def render_views(game):
 if __name__ == '__main__':
     p1_carrier = Ship.carrier()
     p1 = Player('Player One')
-    p1.place_ship(p1_carrier, 'D4', Orientation.LANDSCAPE)
-
-    p2_destroyer = Ship.destroyer()
-    p2_carrier = Ship.carrier()
+    p1.random_layout(fleet)
 
     p2 = Player('Player Two')
-    p2.place_ship(p2_destroyer, 'A1', Orientation.LANDSCAPE)
-    p2.place_ship(p2_carrier, 'C2', Orientation.PORTRAIT)
+    p2.random_layout(fleet)
 
     game = Game(p1, p2)
 
