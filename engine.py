@@ -509,7 +509,21 @@ class Player:
     def __eq__(self, other):
         return self.name == other.name
 
+    def __str__(self):
+        return self.name
 
+class AIPlayer(Player):
+    def __init__(self,name):
+        super().__init__(name)
+
+class RandomAIPlayer(AIPlayer):
+    def __init__(self,name):
+        super().__init__(name)
+        self.targets = ["{0}{1}".format(row,column) for row in 'ABCDEFGH' for column in range(1,9)]
+        random.shuffle(self.targets)
+
+    def next_target(self):
+        return self.targets.pop(0)
 
 class Game:
 
@@ -521,22 +535,24 @@ class Game:
     making the attack and current_opponent as the player being attacked.
     """
 
-    def __init__(self, p1, p2):
+    def __init__(self, human, computer):
         """Allocates a new instance.
 
-        :param p1: player one
-        :param p2: player two
+        :param human: human player
+        :param computer: computer player
         :return: new game instance
         """
-        self.p1 = p1
-        self.p2 = p2
-        self.current_player = p1
-        self.current_opponent = p2
+        self.human = human
+        self.computer = computer
+        self.current_player = human
+        self.current_opponent = computer
 
     def next_player(self):
         """Swaps current_player and current_opponent."""
 
         self.current_player, self.current_opponent = self.current_opponent, self.current_player
+
+        return self.current_player
 
     def take_turn(self, coord):
         """Current player attacks a grid space identified by a player co-ordinate.

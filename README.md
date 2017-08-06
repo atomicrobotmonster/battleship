@@ -16,7 +16,7 @@ pip3 install -r requirements.txt
 
 # Playing the Game
 
-python main.py to run a sample game.
+python main.py to run a sample game. The game pits a single human player against a single AI player. At present, the AI player is an easy opponent as it naively selects a target at random.
 
 # Testing
 

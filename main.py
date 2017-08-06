@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-from engine import Player, Game, Ship, AlreadyAttacked, Orientation, fleet
-
+from engine import Player, AIPlayer, RandomAIPlayer, Game, Ship, AlreadyAttacked, Orientation, fleet
+from time import sleep
+from copy import deepcopy
 
 def create_fleet_view(player):
     view = [['_'] * player.battle_grid.grid_dimension[0]
@@ -88,8 +89,8 @@ def render_target_view(player):
 
 
 def render_views(game):
-    fleet_view = render_fleet_view(game.current_player)
-    target_view = render_target_view(game.current_opponent)
+    fleet_view = render_fleet_view(game.human)
+    target_view = render_target_view(game.computer)
 
     print('\n')
 
@@ -100,29 +101,37 @@ def render_views(game):
 if __name__ == '__main__':
 
     p1 = Player('Player One')
-    p1.random_layout(fleet)
-    p2 = Player('Player Two')
-    p2.random_layout(fleet)
+    p1.random_layout(deepcopy(fleet))
+    p2 = RandomAIPlayer('Player Two')
+    p2.random_layout(deepcopy(fleet))
 
     game = Game(p1, p2)
 
     playing = True
     render_views(game)
     while playing:
+        if isinstance(game.current_player, AIPlayer):
+            command = game.current_player.next_target()
+            print('\n{0} is choosing a target'.format(game.current_player), end='')
+            for _ in range(3):
+                sleep(1)
+                print('.',end='',flush=True)
+            print(command)
+            sleep(0.75)
+        else:
+            valid_coord = False
+            while playing and not valid_coord:
+                command = input(
+                    '\nYour turn, ' + game.current_player.name + ': ').strip().upper()
 
-        valid_coord = False
-        while playing and not valid_coord:
-            command = input(
-                '\nYour turn, ' + game.current_player.name + ': ').strip().upper()
-
-            if command == 'QUIT':
-                playing = False
-            elif command == 'SHOW':
-                render_views(game)
-            elif not p1.battle_grid.valid_coord(command):
-                print('\nPlease enter a valid co-ordinate (e.g. C7), "show" to view the board, or "quit" to end game.')
-            else:
-                valid_coord = True
+                if command == 'QUIT':
+                    playing = False
+                elif command == 'SHOW':
+                    render_views(game)
+                elif not p1.battle_grid.valid_coord(command):
+                    print('\nPlease enter a valid co-ordinate (e.g. C7), "show" to view the board, or "quit" to end game.')
+                else:
+                    valid_coord = True
 
         if playing:
             try:
@@ -131,7 +140,11 @@ if __name__ == '__main__':
                 print('\n{0} has already been attacked.'.format(command))
             else:
                 print('\n{0}: {1}'.format(command, outcome))
-                playing = not outcome.is_game_over()
+                won = outcome.is_game_over()
+                if won:
+                    print("\n{0} is the winner!".format(game.current_player))
+                playing = not won
                 render_views(game)
+                game.next_player()
 
     print('\n')

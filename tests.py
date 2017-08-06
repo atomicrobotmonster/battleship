@@ -171,6 +171,20 @@ class PlayerTest(unittest.TestCase):
     def setUp(self):
         self.player = engine.Player('Testy', self.grid)
 
+class RandomAIPlayerTest(unittest.TestCase):
+
+    def test_targets_count(self):
+        player = engine.RandomAIPlayer("Computer")
+        self.assertEqual(len(player.targets),64)
+
+    def test_next_target(self):
+        player = engine.RandomAIPlayer("Computer")
+
+        expected_next = player.targets[0]
+        actual_next = player.next_target()
+        self.assertEquals(expected_next, actual_next)
+        self.assertEqual(len(player.targets),63)
+
 
 if __name__ == '__main__':
     unittest.main()
